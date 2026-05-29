@@ -30,7 +30,7 @@ LANG = {
         "verifying": "Сохранение...", "keys_ok": "Ключи сохранены!",
         "keys_removed": "Ключи удалены", "keys_saved": "Ключи настроены",
         "plans": "Тарифы", "weekly": "Неделя", "monthly": "Месяц", "quarterly": "3 Месяца",
-        "contact_upgrade": "Для оплаты: @JinadaSupport",
+        "contact_upgrade": "Для оплаты: @JSAdmin2026",
         "admin_panel": "Админ панель", "total_clients": "Всего", "active": "Активных",
         "api_connected": "API", "revenue": "Доход",
         "clients_list": "Клиенты", "add_client": "Добавить", "gen_keys": "Ключи",
