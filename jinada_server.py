@@ -1,24 +1,12 @@
-"""
-╔══════════════════════════════════════════════╗
-║        Jinada.Trade — All-in-One Server      ║
-║     AI Trading Platform for Clients           ║
-║     Database: Google Sheets (not lost)        ║
-╚══════════════════════════════════════════════╝
-"""
-
 import sys
 import json
 import hashlib
 import secrets
-import subprocess
 import urllib.parse
 import pandas as pd
 from datetime import datetime, timedelta
 from typing import Optional
 
-# ============================================================
-# НАСТРОЙКИ
-# ============================================================
 ADMIN_USERNAME = "admin"
 ADMIN_PASSWORD = "admin123"
 INITIAL_BALANCE = 300.0
@@ -38,10 +26,9 @@ LANG = {
         "days_left": "дн.", "bot_status": "Статус бота: Активен 24/7",
         "api_config": "Настройка API", "api_warning": "Включи ТОЛЬКО Spot. НЕ включай вывод!",
         "exchange": "Биржа", "api_key": "API Key", "secret_key": "Secret Key",
-        "save_verify": "Сохранить и проверить", "remove_keys": "Удалить ключи",
-        "verifying": "Проверка...", "keys_ok": "Ключи проверены!",
-        "keys_invalid": "Неверные ключи", "keys_removed": "Ключи удалены",
-        "keys_saved": "Ключи настроены",
+        "save_verify": "Сохранить ключи", "remove_keys": "Удалить ключи",
+        "verifying": "Сохранение...", "keys_ok": "Ключи сохранены!",
+        "keys_removed": "Ключи удалены", "keys_saved": "Ключи настроены",
         "plans": "Тарифы", "weekly": "Неделя", "monthly": "Месяц", "quarterly": "3 Месяца",
         "contact_upgrade": "Для оплаты: @JinadaSupport",
         "admin_panel": "Админ панель", "total_clients": "Всего", "active": "Активных",
@@ -68,10 +55,9 @@ LANG = {
         "days_left": "d left", "bot_status": "Bot Status: Active 24/7",
         "api_config": "API Config", "api_warning": "Enable ONLY Spot. NEVER Withdrawal!",
         "exchange": "Exchange", "api_key": "API Key", "secret_key": "Secret Key",
-        "save_verify": "Save & Verify", "remove_keys": "Remove Keys",
-        "verifying": "Verifying...", "keys_ok": "Keys verified!",
-        "keys_invalid": "Invalid keys", "keys_removed": "Keys removed",
-        "keys_saved": "Keys configured",
+        "save_verify": "Save Keys", "remove_keys": "Remove Keys",
+        "verifying": "Saving...", "keys_ok": "Keys saved!",
+        "keys_removed": "Keys removed", "keys_saved": "Keys configured",
         "plans": "Plans", "weekly": "Weekly", "monthly": "Monthly", "quarterly": "3 Months",
         "contact_upgrade": "To upgrade: @JinadaSupport",
         "admin_panel": "Admin Panel", "total_clients": "Total", "active": "Active",
@@ -86,9 +72,6 @@ LANG = {
     }
 }
 
-# ============================================================
-# ХРАНЕНИЕ ДАННЫХ (Streamlit session_state + secrets)
-# ============================================================
 def load_clients():
     import streamlit as st
     if 'clients_db' not in st.session_state:
@@ -146,36 +129,6 @@ def verify_client(username: str, password: str) -> Optional[dict]:
         return None
     return client
 
-def verify_binance_api(api_key: str, api_secret: str) -> bool:
-    try:
-        import requests, time, hmac, hashlib
-        url = "https://api.binance.com/api/v3/account"
-        params = {"timestamp": int(time.time() * 1000)}
-        query = urllib.parse.urlencode(params)
-        signature = hmac.new(api_secret.encode(), query.encode(), hashlib.sha256).hexdigest()
-        headers = {"X-MBX-APIKEY": api_key}
-        resp = requests.get(f"{url}?{query}&signature={signature}", headers=headers, timeout=10)
-        return resp.status_code == 200 and "balances" in resp.json()
-    except:
-        return False
-
-def verify_bybit_api(api_key: str, api_secret: str) -> bool:
-    try:
-        import requests, time, hmac, hashlib
-        url = "https://api.bybit.com/v5/account/wallet-balance"
-        timestamp = str(int(time.time() * 1000))
-        params = {"api_key": api_key, "timestamp": timestamp, "accountType": "UNIFIED"}
-        query = urllib.parse.urlencode(sorted(params.items()))
-        signature = hmac.new(api_secret.encode(), query.encode(), hashlib.sha256).hexdigest()
-        headers = {"X-BAPI-API-KEY": api_key, "X-BAPI-TIMESTAMP": timestamp, "X-BAPI-SIGN": signature}
-        resp = requests.get(f"{url}?{query}", headers=headers, timeout=10)
-        return resp.status_code == 200 and resp.json().get("retCode") == 0
-    except:
-        return False
-
-# ============================================================
-# ГЛАВНЫЙ ИНТЕРФЕЙС
-# ============================================================
 def main():
     import streamlit as st
     
@@ -205,26 +158,13 @@ def main():
             border-radius: 10px; color: #FFF; padding: 14px 16px;
         }
         [data-testid="stMetricValue"] { color: #FFF !important; font-weight: 800 !important; }
-        .card {
-            background: #111111; border: 1px solid #1A1A1A;
-            border-radius: 14px; padding: 24px; margin-bottom: 12px;
-        }
-        .badge {
-            display: inline-block; padding: 5px 12px;
-            border-radius: 20px; font-size: 12px; font-weight: 600;
-        }
+        .card { background: #111; border: 1px solid #1A1A1A; border-radius: 14px; padding: 24px; }
+        .badge { display: inline-block; padding: 5px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; }
         .badge.green { background: rgba(0,255,136,0.12); color: #00FF88; }
         .badge.gold { background: rgba(255,215,0,0.12); color: #FFD700; }
         .badge.red { background: rgba(255,68,68,0.12); color: #FF4444; }
-        .admin-header {
-            background: linear-gradient(135deg, #1A1A1A, #0D0D0D);
-            border: 1px solid #FFD700; border-radius: 14px;
-            padding: 20px 24px; margin-bottom: 24px;
-        }
+        .admin-header { background: linear-gradient(135deg, #1A1A1A, #0D0D0D); border: 1px solid #FFD700; border-radius: 14px; padding: 20px 24px; margin-bottom: 24px; }
         .stTabs [aria-selected="true"] { color: #FFD700 !important; }
-        .stDataFrame { background: #111; border: 1px solid #1A1A1A; border-radius: 14px; }
-        .stDataFrame th { background: #1A1A1A !important; color: #888 !important; }
-        .stDataFrame td { color: #CCC !important; }
         hr { border-color: #1A1A1A !important; margin: 24px 0 !important; }
     </style>
     """, unsafe_allow_html=True)
@@ -287,7 +227,6 @@ def main():
                     else: st.error(t['username_taken'])
         st.stop()
     
-    # ДАШБОРД
     client = st.session_state.client
     username = st.session_state.username
     is_admin = st.session_state.get('is_admin', False)
@@ -319,61 +258,81 @@ def main():
     tab_list = st.tabs(tabs)
     ti = 0
     
-    with tab_list[ti]: ti += 1
-    if not client.get('api_key'): st.warning(t['configure_keys'])
-    else:
-        st.success(f"{t['connected']}: {client.get('exchange', 'Exchange')}")
-        c1, c2, c3 = st.columns(3)
-        with c1: st.metric(t['balance'], f"${client.get('balance', 300):.0f}")
-        with c2: st.metric(t['positions'], "0")
-        with c3: st.metric(t['pnl_today'], "$0.00")
-        st.markdown(f"**{t['bot_status']}**")
+    with tab_list[ti]:
+        ti += 1
+        if not client.get('api_key'):
+            st.warning(t['configure_keys'])
+        else:
+            st.success(f"{t['connected']}: {client.get('exchange', 'Exchange')}")
+            c1, c2, c3 = st.columns(3)
+            with c1: st.metric(t['balance'], f"${client.get('balance', 300):.0f}")
+            with c2: st.metric(t['positions'], "0")
+            with c3: st.metric(t['pnl_today'], "$0.00")
+            st.markdown(f"**{t['bot_status']}**")
     
-    with tab_list[ti]: ti += 1
-    st.markdown(f"### {t['api_config']}"); st.caption(t['api_warning'])
-    exchange = st.selectbox(t['exchange'], ["Binance", "Bybit"])
-    api_key = st.text_input(t['api_key'], type="password")
-    api_secret = st.text_input(t['secret_key'], type="password")
-    col1, col2 = st.columns(2)
-    with col1:
-        if st.button(t['save_verify'], type="primary", width='stretch'):
-            if not api_key or not api_secret: st.error(t['fill_fields'])
-            else:
-                with st.spinner(t['verifying']):
-                   valid = True  
-                    if valid:
-                        if is_admin: client["api_key"], client["api_secret"], client["exchange"] = api_key, api_secret, exchange
-                        else:
-                            cl = load_clients()
-                            cl["clients"][username]["api_key"] = api_key; cl["clients"][username]["api_secret"] = api_secret; cl["clients"][username]["exchange"] = exchange
-                            save_clients(cl); st.session_state.client = cl["clients"][username]
-                        st.success(t['keys_ok']); st.rerun()
-                    else: st.error(t['keys_invalid'])
-    with col2:
-        if client.get('api_key') and st.button(t['remove_keys'], width='stretch'):
-            if is_admin: client["api_key"] = client["api_secret"] = client["exchange"] = ""
-            else:
-                cl = load_clients()
-                cl["clients"][username]["api_key"] = cl["clients"][username]["api_secret"] = cl["clients"][username]["exchange"] = ""
-                save_clients(cl); st.session_state.client = cl["clients"][username]
-            st.warning(t['keys_removed']); st.rerun()
-    if client.get('api_key'): st.success(f"{t['keys_saved']}: {client.get('exchange')}")
+    with tab_list[ti]:
+        ti += 1
+        st.markdown(f"### {t['api_config']}")
+        st.caption(t['api_warning'])
+        exchange = st.selectbox(t['exchange'], ["Binance", "Bybit"])
+        api_key = st.text_input(t['api_key'], type="password")
+        api_secret = st.text_input(t['secret_key'], type="password")
+        col1, col2 = st.columns(2)
+        with col1:
+            if st.button(t['save_verify'], type="primary", width='stretch'):
+                if not api_key or not api_secret:
+                    st.error(t['fill_fields'])
+                else:
+                    if is_admin:
+                        client["api_key"] = api_key
+                        client["api_secret"] = api_secret
+                        client["exchange"] = exchange
+                    else:
+                        cl = load_clients()
+                        cl["clients"][username]["api_key"] = api_key
+                        cl["clients"][username]["api_secret"] = api_secret
+                        cl["clients"][username]["exchange"] = exchange
+                        save_clients(cl)
+                        st.session_state.client = cl["clients"][username]
+                    st.success(t['keys_ok'])
+                    st.rerun()
+        with col2:
+            if client.get('api_key') and st.button(t['remove_keys'], width='stretch'):
+                if is_admin:
+                    client["api_key"] = ""
+                    client["api_secret"] = ""
+                    client["exchange"] = ""
+                else:
+                    cl = load_clients()
+                    cl["clients"][username]["api_key"] = ""
+                    cl["clients"][username]["api_secret"] = ""
+                    cl["clients"][username]["exchange"] = ""
+                    save_clients(cl)
+                    st.session_state.client = cl["clients"][username]
+                st.warning(t['keys_removed'])
+                st.rerun()
+        if client.get('api_key'):
+            st.success(f"{t['keys_saved']}: {client.get('exchange')}")
     
-    with tab_list[ti]: ti += 1
-    st.markdown(f"### {t['plans']}")
-    plans = [{"name": t['weekly'], "price": "$4.90"}, {"name": t['monthly'], "price": "$9.90"}, {"name": t['quarterly'], "price": "$24.90"}]
-    cols = st.columns(3)
-    for i, p in enumerate(plans):
-        with cols[i]:
-            st.markdown(f"""<div class="card" style="text-align:center;"><p style="color:#888;">{p['name']}</p><h1>{p['price']}</h1></div>""", unsafe_allow_html=True)
-            st.button(f"{t['select']} {p['name']}", key=f"plan_{i}", width='stretch')
-    st.caption(t['contact_upgrade'])
+    with tab_list[ti]:
+        ti += 1
+        st.markdown(f"### {t['plans']}")
+        plans = [{"name": t['weekly'], "price": "$4.90"}, {"name": t['monthly'], "price": "$9.90"}, {"name": t['quarterly'], "price": "$24.90"}]
+        cols = st.columns(3)
+        for i, p in enumerate(plans):
+            with cols[i]:
+                st.markdown(f"""<div class="card" style="text-align:center;"><p style="color:#888;">{p['name']}</p><h1>{p['price']}</h1></div>""", unsafe_allow_html=True)
+                st.button(f"{t['select']} {p['name']}", key=f"plan_{i}", width='stretch')
+        st.caption(t['contact_upgrade'])
     
     if is_admin:
         with tab_list[ti]:
-            cl = load_clients(); clist = list(cl["clients"].values())
-            total, active = len(clist), sum(1 for c in clist if c.get("active"))
+            cl = load_clients()
+            clist = list(cl["clients"].values())
+            total = len(clist)
+            active = sum(1 for c in clist if c.get("active"))
             api_ok = sum(1 for c in clist if c.get("api_key"))
+            
             st.markdown(f'<div class="admin-header"><h2>{t["admin_panel"]}</h2></div>', unsafe_allow_html=True)
             c1, c2, c3, c4 = st.columns(4)
             with c1: st.metric(t['total_clients'], total)
@@ -382,32 +341,51 @@ def main():
             with c4:
                 rev = sum(0 if c["plan"]=="trial" else 4.90 if c["plan"]=="weekly" else 9.90 if c["plan"]=="monthly" else 24.90 if c["plan"]=="quarterly" else 79.90 for c in clist if c.get("active"))
                 st.metric(t['revenue'], f"${rev:.0f}")
+            
             st.divider()
             a1, a2, a3 = st.tabs([t['clients_list'], t['add_client'], t['gen_keys']])
+            
             with a1:
                 if clist:
-                    data = [{"User": c["username"], "Plan": c["plan_name"], "Days": max(0, (datetime.fromisoformat(c["expires"])-datetime.now()).days), "API": "YES" if c.get("api_key") else "NO"} for c in clist]
+                    data = []
+                    for c in clist:
+                        exp = datetime.fromisoformat(c["expires"])
+                        dl = max(0, (exp - datetime.now()).days)
+                        data.append({"User": c["username"], "Plan": c["plan_name"], "Days": dl, "API": "YES" if c.get("api_key") else "NO"})
                     st.dataframe(pd.DataFrame(data), width='stretch', hide_index=True)
+                    
                     col1, col2 = st.columns(2)
                     with col1: sel = st.selectbox(t['client'], [c["username"] for c in clist])
                     with col2: act = st.selectbox(t['action'], [t['extend_7'], t['extend_30'], t['deactivate'], t['delete']])
                     if st.button(t['apply'], type="primary"):
                         if sel in cl["clients"]:
                             c = cl["clients"][sel]
-                            if act == t['extend_7']: c["expires"] = (datetime.fromisoformat(c["expires"]) + timedelta(days=7)).isoformat(); c["active"] = True
-                            elif act == t['extend_30']: c["expires"] = (datetime.fromisoformat(c["expires"]) + timedelta(days=30)).isoformat(); c["active"] = True
-                            elif act == t['deactivate']: c["active"] = False
-                            elif act == t['delete']: del cl["clients"][sel]
-                            save_clients(cl); st.rerun()
+                            if act == t['extend_7']:
+                                c["expires"] = (datetime.fromisoformat(c["expires"]) + timedelta(days=7)).isoformat()
+                                c["active"] = True
+                            elif act == t['extend_30']:
+                                c["expires"] = (datetime.fromisoformat(c["expires"]) + timedelta(days=30)).isoformat()
+                                c["active"] = True
+                            elif act == t['deactivate']:
+                                c["active"] = False
+                            elif act == t['delete']:
+                                del cl["clients"][sel]
+                            save_clients(cl)
+                            st.rerun()
+            
             with a2:
                 col1, col2 = st.columns(2)
-                with col1: nu = st.text_input(t['username'], key="a_user"); np = st.text_input(t['password'], type="password", key="a_pass")
-                with col2: pl = st.selectbox(t['plan'], ["trial","weekly","monthly","quarterly","lifetime"], key="a_plan")
+                with col1:
+                    nu = st.text_input(t['username'], key="a_user")
+                    np = st.text_input(t['password'], type="password", key="a_pass")
+                with col2:
+                    pl = st.selectbox(t['plan'], ["trial","weekly","monthly","quarterly","lifetime"], key="a_plan")
                 if st.button(t['create'], type="primary"):
-                    if len(nu)<3: st.error(t['username_short'])
-                    elif len(np)<4: st.error(t['password_short'])
+                    if len(nu) < 3: st.error(t['username_short'])
+                    elif len(np) < 4: st.error(t['password_short'])
                     elif create_client(nu, np, pl): st.success(t['created']); st.code(f"Login: {nu}\nPass: {np}"); st.rerun()
                     else: st.error(t['username_taken'])
+            
             with a3:
                 col1, col2 = st.columns(2)
                 with col1: cnt = st.number_input(t['count'], 1, 100, 10)
@@ -415,8 +393,10 @@ def main():
                 if st.button(t['generate'], type="primary"):
                     kd = []
                     for i in range(cnt):
-                        u = f"user_{secrets.token_hex(4)}"; p = secrets.token_hex(8)
-                        create_client(u, p, pg); kd.append({"Username":u,"Password":p})
+                        u = f"user_{secrets.token_hex(4)}"
+                        p = secrets.token_hex(8)
+                        create_client(u, p, pg)
+                        kd.append({"Username": u, "Password": p})
                     st.dataframe(pd.DataFrame(kd), width='stretch', hide_index=True)
 
 if __name__ == "__main__":
