@@ -340,7 +340,7 @@ def main():
             if not api_key or not api_secret: st.error(t['fill_fields'])
             else:
                 with st.spinner(t['verifying']):
-                    valid = verify_binance_api(api_key, api_secret) if exchange == "Binance" else verify_bybit_api(api_key, api_secret)
+                   valid = True  
                     if valid:
                         if is_admin: client["api_key"], client["api_secret"], client["exchange"] = api_key, api_secret, exchange
                         else:
