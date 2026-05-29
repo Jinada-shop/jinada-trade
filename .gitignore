@@ -1,0 +1,10 @@
+__pycache__/
+*.pyc
+.env
+balance.txt
+trading_bot.db
+models/
+logs/
+*.log
+clients.json
+.streamlit/

@@ -1,0 +1,19 @@
+{
+  "clients": {
+    "admin": {
+      "username": "admin",
+      "password_hash": "7b7f879588100444968418a6406d341ce062bb1864a5c9ef60737ef9a7f35068",
+      "salt": "a046368d42f956106921360ddffdb164",
+      "plan": "trial",
+      "plan_name": "Trial 3 days",
+      "days": 3,
+      "expires": "2026-06-01T14:57:59.643794",
+      "created": "2026-05-29T14:57:59.643794",
+      "active": true,
+      "api_key": "NqZ-R7M-MAB-GTK",
+      "api_secret": "NqZ-R7M-MAB-GTK",
+      "exchange": "Binance",
+      "balance": 300.0
+    }
+  }
+}
